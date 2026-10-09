@@ -1,0 +1,14 @@
+{
+ "n": 1798,
+ "threshold": 0.45,
+ "precision": 0.8019525801952581,
+ "recall": 0.9599332220367279,
+ "f1": 0.8738601823708206,
+ "recall_refutes": 0.9683333333333334,
+ "recall_nei": 0.9515050167224081,
+ "supports_kept": 0.5266666666666666,
+ "contradicted_share_of_refutes": 0.82,
+ "ece_ent_as_p_supports": 0.17172697536635528,
+ "latency_p50_s": 0.04480575013440102,
+ "latency_p95_s": 0.10609384999843306
+}

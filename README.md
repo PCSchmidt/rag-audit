@@ -2,7 +2,7 @@
 
 Deterministic factuality gate for RAG outputs. A generated summary is split into claims, each `[n]` footnote is mapped to the **exact character span** of the cited source that best supports it, and a local NLI cross-encoder decides `ENTAILMENT / NEUTRAL / CONTRADICTION`. Anything not entailed is flagged. The result is an `AuditReport` with a SHA-256 payload hash (optionally HMAC-signed).
 
-**Status:** v0.1 scaffold. Gate logic, hashing and CLI are tested; model-quality benchmarks (FEVER / HaluEval) are **not yet run** - see [docs/RESULTS.md](docs/RESULTS.md).
+**Status:** v0.1. Gate logic, hashing and CLI are tested, and the DeBERTa-small gate has a FEVER benchmark (F1 0.87 flagging unsupported claims, but only 53% of supported claims kept). HaluEval and other models are **not yet run**. See [docs/RESULTS.md](docs/RESULTS.md).
 
 ## Design rule
 
@@ -38,7 +38,7 @@ report.factuality_score, report.flagged, report.payload_sha256
 ## Checks
 
 ```bash
-pytest          # unit + property-based (hypothesis)
+pytest          # 10 tests: unit + property-based (hypothesis)
 mypy src tests  # strict
 docker build -t rag-audit . && docker run --rm --network none rag-audit
 ```
@@ -47,5 +47,6 @@ docker build -t rag-audit . && docker run --rm --network none rag-audit
 
 - Sentence-level passages: a claim needing two sentences of evidence can be marked UNSUPPORTED.
 - DeBERTa-small truncates at 512 tokens per (passage, claim) pair.
+- On FEVER the gate keeps only about half of supported claims; the cause is not yet isolated (see RESULTS).
 - Coreference ("It spans...") is not resolved; the claim is judged as written.
 - Related, not duplicated: VERA audits research papers; gate-enforced-rag does extractive citation gating without NLI.

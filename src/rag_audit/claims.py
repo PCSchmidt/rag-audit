@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict
 _CITE = re.compile(r"\[(\d+(?:\s*,\s*\d+)*)\]")
 # Split after ., ! or ? followed by whitespace and an uppercase letter/digit/quote, keeping any
 # trailing citation marker with its sentence ("... fact.[1] Next" and "... fact [1]. Next").
-_BOUNDARY = re.compile(r"(?<=[.!?])(?:\s*\[\d+(?:\s*,\s*\d+)*\])*\s+(?=[\"'(\[]?[A-Z0-9])")
+_BOUNDARY = re.compile(r"(?<=[.!?])(?:\s*\[\d+(?:\s*,\s*\d+)*\])*\s+(?=[\"'(]?[A-Z0-9])")
 
 
 class Claim(BaseModel):

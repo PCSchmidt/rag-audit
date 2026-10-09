@@ -105,3 +105,10 @@ def test_score_in_range_and_flags_consistent(sources: list[str], summary: str) -
     report = FactualityAuditor(LexicalOverlapNLI()).audit(sources, summary)
     assert 0.0 <= report.factuality_score <= 100.0
     assert report.n_supported + len(report.flagged) == report.n_claims
+
+
+def test_citation_after_sentence_punctuation_stays_with_claim() -> None:
+    # Regression: "fact. [1]" used to split into a claim and a citation-only fragment (UNCITED).
+    (claim,) = split_claims("The bridge opened in 1932. [1]")
+    assert claim.citations == (1,)
+    assert [c.citations for c in split_claims("First fact. [1] Second fact. [2]")] == [(1,), (2,)]
