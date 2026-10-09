@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rag-audit"
+version = "0.1.0"
+description = "Deterministic factuality gate for RAG outputs: claim decomposition, citation span alignment, NLI verification, signed audit certificates."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "PCSchmidt" }]
+dependencies = ["pydantic>=2.6"]
+
+[project.optional-dependencies]
+nli = ["transformers>=4.40", "torch>=2.2"]
+dev = ["pytest>=8", "hypothesis>=6.100", "mypy>=1.10", "ruff>=0.5"]
+
+[project.scripts]
+rag-audit = "rag_audit.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rag_audit"]
+
+[tool.mypy]
+strict = true
+python_version = "3.11"
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["transformers.*", "torch.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
