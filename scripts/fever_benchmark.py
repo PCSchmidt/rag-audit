@@ -12,6 +12,7 @@ With --tag, outputs go to results/ablation/<tag>/ (the original run used the unt
 from __future__ import annotations
 
 import argparse
+import itertools
 import json
 import random
 import sys
@@ -70,7 +71,7 @@ def score_items(items: list[dict[str, str]], scorer: CrossEncoderNLI) -> list[di
 def ece(conf: np.ndarray, correct: np.ndarray, bins: int = 10) -> float:
     edges = np.linspace(0, 1, bins + 1)
     total = 0.0
-    for lo, hi in zip(edges[:-1], edges[1:], strict=True):
+    for lo, hi in itertools.pairwise(edges):
         m = (conf >= lo) & (conf <= hi if hi == 1 else conf < hi)
         if m.any():
             total += m.mean() * abs(conf[m].mean() - correct[m].mean())

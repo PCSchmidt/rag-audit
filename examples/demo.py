@@ -10,10 +10,14 @@ from rag_audit.nli import CrossEncoderNLI
 
 SOURCES = [
     # Callers should keep each passage self-contained: here the subject is named in every sentence.
-    "The Harbor Bridge opened to traffic in 1932. The Harbor Bridge carries six lanes of traffic "
-    "across the harbour. The Harbor Bridge is 1,149 metres long.",
-    "The Harbor Ferry service ended in 1960. Ridership on the Harbor Ferry had fallen sharply "
-    "after the bridge opened.",
+    (
+        "The Harbor Bridge opened to traffic in 1932. The Harbor Bridge carries six lanes of "
+        "traffic across the harbour. The Harbor Bridge is 1,149 metres long."
+    ),
+    (
+        "The Harbor Ferry service ended in 1960. Ridership on the Harbor Ferry had fallen "
+        "sharply after the bridge opened."
+    ),
 ]
 
 SUMMARY = (
