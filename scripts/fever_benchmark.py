@@ -4,12 +4,14 @@ Task: a claim cited to its gold evidence. SUPPORTS -> auditor should say SUPPORT
 REFUTES and NOT ENOUGH INFO -> auditor should flag it (positive class = flagged).
 
 Usage:
-  python scripts/fever_benchmark.py dev     # score dev items, sweep, write results/frozen.json
-  python scripts/fever_benchmark.py test    # refuses to run without frozen.json; runs once
+  python scripts/fever_benchmark.py dev  [--model M] [--titles] [--tag T]
+  python scripts/fever_benchmark.py test [--model M] [--titles] [--tag T] [--test-seed N]
+With --tag, outputs go to results/ablation/<tag>/ (the original run used the untagged results/).
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import random
 import sys
@@ -29,7 +31,11 @@ PER_LABEL = 600
 LABELS = ("SUPPORTS", "REFUTES", "NOT ENOUGH INFO")
 
 
-def sample(split: str, seed: int) -> list[dict[str, str]]:
+def clean_title(t: str) -> str:
+    return t.replace("_", " ").replace("-LRB-", "(").replace("-RRB-", ")")
+
+
+def sample(split: str, seed: int, titles: bool = False) -> list[dict[str, str]]:
     ds = load_dataset("copenlu/fever_gold_evidence", split=split)
     rng = random.Random(seed)
     items: list[dict[str, str]] = []
@@ -37,7 +43,9 @@ def sample(split: str, seed: int) -> list[dict[str, str]]:
         idx = [i for i, lb in enumerate(ds["label"]) if lb == label]
         for i in rng.sample(idx, PER_LABEL):
             row = ds[i]
-            text = " ".join(e[2] for e in row["evidence"] if e[2])
+            text = " ".join(
+                (f"{clean_title(e[0])}: {e[2]}" if titles else e[2]) for e in row["evidence"] if e[2]
+            )
             claim = row["claim"].strip()
             if text and claim:
                 items.append({"id": row["id"], "label": label, "claim": claim, "evidence": text})
@@ -77,12 +85,20 @@ def prf(flag: np.ndarray, positive: np.ndarray) -> tuple[float, float, float]:
 
 
 def main() -> None:
-    mode = sys.argv[1]
-    OUT.mkdir(exist_ok=True)
-    scorer = CrossEncoderNLI()
+    ap = argparse.ArgumentParser()
+    ap.add_argument("mode", choices=["dev", "test"])
+    ap.add_argument("--model", default="cross-encoder/nli-deberta-v3-small")
+    ap.add_argument("--titles", action="store_true")
+    ap.add_argument("--tag", default="")
+    ap.add_argument("--test-seed", type=int, default=2)
+    args = ap.parse_args()
+    mode = args.mode
+    out = OUT / "ablation" / args.tag if args.tag else OUT
+    out.mkdir(parents=True, exist_ok=True)
+    scorer = CrossEncoderNLI(args.model)
     if mode == "dev":
-        rows = score_items(sample("validation", seed=0), scorer)
-        (OUT / "dev_scores.json").write_text(json.dumps(rows))
+        rows = score_items(sample("validation", seed=0, titles=args.titles), scorer)
+        (out / "dev_scores.json").write_text(json.dumps(rows))
         ent = np.array([r["ent"] for r in rows], dtype=float)
         positive = np.array([r["label"] != "SUPPORTS" for r in rows])
         sweep = []
@@ -90,15 +106,15 @@ def main() -> None:
             p, r, f = prf(ent < thr, positive)
             sweep.append({"threshold": float(thr), "precision": p, "recall": r, "f1": f})
         best = max(sweep, key=lambda s: s["f1"])
-        (OUT / "dev_sweep.json").write_text(json.dumps(sweep, indent=1))
-        (OUT / "frozen.json").write_text(json.dumps({"entail_threshold": best["threshold"], "dev_f1": best["f1"]}))
+        (out / "dev_sweep.json").write_text(json.dumps(sweep, indent=1))
+        (out / "frozen.json").write_text(json.dumps({"entail_threshold": best["threshold"], "dev_f1": best["f1"]}))
         print("frozen:", best)
         return
-    frozen = json.loads((OUT / "frozen.json").read_text())
-    if (OUT / "test_scores.json").exists():
+    frozen = json.loads((out / "frozen.json").read_text())
+    if (out / "test_scores.json").exists():
         sys.exit("test already run once; refusing to re-run (delete results/test_scores.json deliberately)")
     thr = float(frozen["entail_threshold"])
-    items = sample("test", seed=2)
+    items = sample("test", seed=args.test_seed, titles=args.titles)
     auditor = FactualityAuditor(scorer, entail_threshold=thr)
     trows: list[dict[str, Any]] = []
     t0 = time.perf_counter()
@@ -110,7 +126,7 @@ def main() -> None:
                      "ent": res.best_evidence.scores.entailment if res.best_evidence else 0.0})
         if k % 200 == 0:
             print(f"  {k}/{len(items)}  {time.perf_counter() - t0:.0f}s", flush=True)
-    (OUT / "test_scores.json").write_text(json.dumps(trows))
+    (out / "test_scores.json").write_text(json.dumps(trows))
     labels = np.array([r["label"] for r in trows])
     flag = np.array([r["verdict"] != Verdict.SUPPORTED.value for r in trows])
     positive = labels != "SUPPORTS"
@@ -126,7 +142,7 @@ def main() -> None:
         "latency_p50_s": float(np.median([r["sec"] for r in trows])),
         "latency_p95_s": float(np.percentile([r["sec"] for r in trows], 95)),
     }
-    (OUT / "test_summary.json").write_text(json.dumps(summary, indent=1))
+    (out / "test_summary.json").write_text(json.dumps(summary, indent=1))
     print(json.dumps(summary, indent=1))
 
 

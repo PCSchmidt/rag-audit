@@ -1,0 +1,14 @@
+C:\Dev\AIEngineeringProjects\rag-audit\.venv\Lib\site-packages\torch\jit\_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
+  warnings.warn(
+Loading weights:   0%|          | 0/106 [00:00<?, ?it/s]Loading weights: 100%|██████████| 106/106 [00:00<00:00, 1775.94it/s]
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+  0/1793  0s
+  200/1793  11s
+  400/1793  642s
+  600/1793  652s
+  800/1793  665s
+  1000/1793  676s
+  1200/1793  688s
+  1400/1793  697s
+  1600/1793  708s
+frozen: {'threshold': 0.55, 'precision': 0.9257095158597662, 'recall': 0.9295892707460185, 'f1': 0.9276453366792136}
