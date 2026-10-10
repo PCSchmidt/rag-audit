@@ -59,27 +59,71 @@ An LLM judge is itself a generator: it can be fooled by fluent text, differs fro
 
 ## Architecture at a glance
 
-```text
- sources[ ]            summary with [n] footnotes
-     |                          |
-     |                  1. split into claims  --------- deterministic (regex, offsets kept)
-     |                          |
-     |              2. read footnotes per claim ------- deterministic
-     |                          |
-     |        no footnote?  ->  UNCITED
-     |        [n] out of range? -> INVALID_CITATION
-     |                          |
-     +--> 3. split cited source into passages, keep character offsets
-                                |
-              4. NLI model scores (passage, claim)  --- the ONLY probabilistic step
-                    entailment / neutral / contradiction
-                                |
-              5. fixed thresholds -> SUPPORTED | CONTRADICTED | UNSUPPORTED
-                                |
-              6. AuditReport + SHA-256 (+ optional HMAC) ---- deterministic
+```mermaid
+flowchart LR
+    SRC[/"source_documents"/]
+    SUM[/"generated_summary<br>with [n] footnotes"/]
+
+    subgraph prep["1 · Prepare (deterministic)"]
+        direction TB
+        SPLIT["Split into claims<br>offsets kept"]
+        CITE["Read footnotes<br>per claim"]
+        PASS["Split cited sources<br>into passages<br>with char offsets"]
+        SPLIT --> CITE
+    end
+
+    subgraph gate0["2 · Short-circuit (no model)"]
+        direction TB
+        UNC["UNCITED<br>no footnote"]
+        INV["INVALID_CITATION<br>[n] outside sources"]
+    end
+
+    subgraph prob["3 · Score (probabilistic)"]
+        NLI["NLI cross-encoder<br>local, CPU<br>P(entail · neutral · contradict)<br>per passage"]
+    end
+
+    subgraph decide["4 · Decide (deterministic)"]
+        direction TB
+        RULE["Best passage per claim<br>entail ≥ T1 → SUPPORTED<br>else contradict ≥ T2 → CONTRADICTED<br>else UNSUPPORTED"]
+    end
+
+    subgraph seal["5 · Seal (deterministic)"]
+        direction TB
+        REP["AuditReport<br>score · verdict + evidence<br>span per claim"]
+        HASH["SHA-256 payload hash<br>+ optional HMAC"]
+        REP --> HASH
+    end
+
+    OUT(["Not SUPPORTED → flagged<br>--fail-below N → exit 1"])
+
+    SUM --> SPLIT
+    SRC --> PASS
+    CITE -- "none" --> UNC
+    CITE -- "out of range" --> INV
+    CITE -- "valid" --> NLI
+    PASS --> NLI
+    NLI --> RULE
+    RULE --> REP
+    UNC --> REP
+    INV --> REP
+    REP --> OUT
+
+    classDef det fill:#e8f1fb,stroke:#2f6db5,color:#102a43
+    classDef prob fill:#fff1d6,stroke:#c27c0e,color:#3d2500,stroke-width:3px
+    classDef bad fill:#fde8e8,stroke:#c0392b,color:#4a1010
+    classDef io fill:#f2f2f2,stroke:#666,color:#222
+    class SPLIT,CITE,PASS,RULE,REP,HASH det
+    class NLI prob
+    class UNC,INV,OUT bad
+    class SRC,SUM io
+    style prep fill:#f4f8fd,stroke:#2f6db5,color:#102a43
+    style gate0 fill:#fdf3f3,stroke:#c0392b,color:#4a1010
+    style prob fill:#fff9ec,stroke:#c27c0e,color:#3d2500
+    style decide fill:#f4f8fd,stroke:#2f6db5,color:#102a43
+    style seal fill:#f4f8fd,stroke:#2f6db5,color:#102a43
 ```
 
-The probabilistic component never flags, passes, or signs anything by itself: it hands three numbers to code that applies thresholds.
+*Blue is plain deterministic code; the single amber box is the only place a model is involved, and all it returns is three probabilities per passage. Red marks outcomes that flag a claim without any model call, or flag it after one. `T1` is `entail_threshold` and `T2` is `contradict_threshold`. Every verdict, flag, hash and signature comes from the blue code around the model.*
 
 ## Quickstart
 
