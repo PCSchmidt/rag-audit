@@ -242,7 +242,7 @@ Raw per-item scores for every table row are committed under `results/`.
 
 ## License
 
-MIT. See [LICENSE](LICENSE). FEVER data is used under its own terms (CC BY-SA).
+MIT. See [LICENSE](LICENSE). FEVER ([Thorne et al., 2018](https://fever.ai/dataset/fever.html)) is used under its own terms (CC BY-SA 3.0): the committed result files carry only claim ids, labels and scores, never the claim or Wikipedia text, which `scripts/fever_benchmark.py` regenerates from the ids.
 
 ## Author
 

@@ -53,6 +53,12 @@ def sample(split: str, seed: int, titles: bool = False) -> list[dict[str, str]]:
     return items
 
 
+def _without_text(item: dict[str, str]) -> dict[str, str]:
+    """Drop the FEVER claim and Wikipedia evidence before saving: that text is CC BY-SA, and the ids are
+    enough to regenerate it, so committed results carry only ids, labels and scores."""
+    return {k: v for k, v in item.items() if k not in ("claim", "evidence")}
+
+
 def score_items(items: list[dict[str, str]], scorer: CrossEncoderNLI) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     t0 = time.perf_counter()
@@ -62,7 +68,7 @@ def score_items(items: list[dict[str, str]], scorer: CrossEncoderNLI) -> list[di
         for _, _, p in passages(it["evidence"]):
             s = scorer.score(p, it["claim"])
             best_e, best_c = max(best_e, s.entailment), max(best_c, s.contradiction)
-        rows.append({**it, "ent": best_e, "con": best_c, "sec": time.perf_counter() - t})
+        rows.append({**_without_text(it), "ent": best_e, "con": best_c, "sec": time.perf_counter() - t})
         if k % 200 == 0:
             print(f"  {k}/{len(items)}  {time.perf_counter() - t0:.0f}s", flush=True)
     return rows
@@ -123,7 +129,7 @@ def main() -> None:
         t = time.perf_counter()
         rep = auditor.audit([it["evidence"]], it["claim"].rstrip(".") + ". [1]")
         res = rep.results[0]
-        trows.append({**it, "verdict": res.verdict.value, "sec": time.perf_counter() - t,
+        trows.append({**_without_text(it), "verdict": res.verdict.value, "sec": time.perf_counter() - t,
                      "ent": res.best_evidence.scores.entailment if res.best_evidence else 0.0})
         if k % 200 == 0:
             print(f"  {k}/{len(items)}  {time.perf_counter() - t0:.0f}s", flush=True)
