@@ -7,9 +7,7 @@ To support symlinks on Windows, you either need to activate Developer Mode or to
   warnings.warn(message)
 C:\Dev\AIEngineeringProjects\rag-audit\.venv\Lib\site-packages\torch\jit\_script.py:1491: FutureWarning: `torch.jit.script` is deprecated. Please switch to `torch.compile` or `torch.export`.
   warnings.warn(
-
-Loading weights:   0%|          | 0/202 [00:00<?, ?it/s]
-Loading weights: 100%|██████████| 202/202 [00:00<00:00, 2027.82it/s]
+Loading weights:   0%|          | 0/202 [00:00<?, ?it/s]Loading weights: 100%|██████████| 202/202 [00:00<00:00, 2027.82it/s]
   0/1793  0s
   200/1793  22s
   400/1793  44s
