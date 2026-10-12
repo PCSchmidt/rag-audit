@@ -1,6 +1,8 @@
 # rag-audit — a factuality gate for AI-written summaries, checked sentence by sentence against the cited source
 
-**Status: v0.1, portfolio project.** Core library, CLI and tests are complete; the NLI gate is benchmarked on FEVER ([Results](#results)). Not yet done: HaluEval, a PyPI release, multi-claim and non-Wikipedia evaluation. Every known gap is in [Limitations](#limitations).
+![CI](https://github.com/PCSchmidt/rag-audit/actions/workflows/ci.yml/badge.svg)
+
+**Status: v0.2, portfolio project.** Core library, CLI and tests are complete; the NLI gate is benchmarked on FEVER ([Results](#results)). Not yet done: HaluEval, a PyPI release, multi-claim and non-Wikipedia evaluation. Every known gap is in [Limitations](#limitations).
 
 ```text
 factuality score: 40%  (2/5)
