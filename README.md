@@ -211,6 +211,14 @@ Full tables, protocol, the rejected hypothesis, and an invalid first run that is
 - **Not adversarial.** Paraphrased, negated or deliberately misleading claims were not specifically tested.
 - **No release yet.** Not on PyPI; HaluEval, GPU timings and larger-model comparisons are not run. The `roberta-large-snli_mnli_fever_anli` model named in my plan was skipped on purpose: it was trained on FEVER, which would contaminate this benchmark.
 
+## Known gaps against the original roadmap
+
+The project began as an item in a longer roadmap that named a larger stack and scope. These parts of that plan were **not built**; the results above say nothing about them.
+
+- A PyPI release: the library installs from the repository only.
+- HaluEval (only FEVER was run).
+- The `roberta-large` NLI model named in the plan: skipped on purpose, because it was trained on FEVER and would contaminate the benchmark.
+
 ## Operational notes
 
 ### What runs where
