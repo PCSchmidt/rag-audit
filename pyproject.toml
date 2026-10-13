@@ -14,7 +14,7 @@ dependencies = ["pydantic>=2.6"]
 
 [project.optional-dependencies]
 nli = ["transformers>=4.40", "torch>=2.2"]
-dev = ["pytest>=8", "hypothesis>=6.100", "mypy>=1.10", "ruff>=0.5"]
+dev = ["pytest>=9.1.1", "hypothesis>=6.100", "mypy>=1.10", "ruff>=0.5"]
 
 [project.scripts]
 rag-audit = "rag_audit.cli:main"
