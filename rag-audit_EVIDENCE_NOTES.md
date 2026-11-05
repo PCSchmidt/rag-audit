@@ -5,7 +5,7 @@ Companion to rag-audit.md. Labels: Confirmed, Ran it, Per the docs, My reading, 
 ## E1 Fact sheet
 - Repo: github.com/PCSchmidt/rag-audit, public, MIT, v0.2.0 (pyproject). 0 stars, 0 forks per GitHub API (2026-10-27). Not on PyPI. Confirmed.
 - Kind: Python library plus CLI plus FEVER benchmark. Source: claims.py 68 lines, auditor.py 170, nli.py 82, cli.py 44, init 16; tests 114 lines; scripts 157+19; demo 43. Confirmed.
-- 12 commits, 2026-10-09 to 2026-10-19. 11 carry "Co-Authored-By: Claude Sonnet 5.5"; the last (24f4cdd, adds an older explainer file to the repo) carries "Claude Opus 5.5". No CLAUDE.md, AGENTS.md or settings folders. Confirmed.
+- 12 commits, 2026-10-09 to 2026-10-19. All 12 carry a Co-Authored-By AI-agent credit line (the last, 24f4cdd, adds an older explainer file to the repo; agent names kept out of the guide and evidence at the author's request). No CLAUDE.md, AGENTS.md or settings folders. Confirmed.
 - Description on GitHub: "Deterministic factuality gate for RAG outputs: claim decomposition, citation span alignment, NLI verification, hashed audit certificates." Topics set. Confirmed.
 - Not deployed. Runs: CI success on every listed run (last 2026-10-19). Ran it (gh run list).
 - Needs: Python 3.11+, pydantic; extras torch and transformers; model download about 570 MB (small) / 740 MB (base, safetensors sizes seen in local cache). Benchmark also needs datasets and numpy (not declared in pyproject; README names datasets). Confirmed.
@@ -64,7 +64,7 @@ src/rag_audit/claims.py (regex split, extract_citations, strip_citations, split_
 10 tests (7 example, 3 Hypothesis). Spot checks: test_verdicts_cover_every_branch uses a scripted scorer and asserts the five verdicts in order and score 20.0 plus 4 flagged (real assertion). test_hash_deterministic_and_sensitive asserts equal hash on repeat and different hash after editing a source (real). test_split_claims_never_crashes asserts offsets slice back to claim text (property, real). CI (.github/workflows/ci.yml): checkout, Python 3.12, pip install -e ".[dev]", mypy src tests, pytest -q. No ruff, no model, no benchmark. Dockerfile: python:3.12-slim, installs [dev], copies tests, CMD pytest; no model. Coverage not measured. Confirmed.
 
 ## E8 History
-Commit times (local): scaffold 10-09 16:53 with RESULTS.md saying "No model benchmarks have been run yet" and the planned frozen-threshold protocol; benchmark plus splitter fix 17:14 same day (21 minutes later); 2x2 ablation 10-10 07:23; README rewrite, diagram, scrub, doc fixes 10-10 to 10-12; Dependabot 10-13; roadmap gaps 10-13; old explainer added 10-19. Plan-versus-results: plan existed before the benchmark script but is a plan, not a locked protocol with a success rule. The 2x2 hypothesis (titles) arose from analysis of test seed 2 outputs (README/RESULTS), then final numbers used a fresh seed 3 sample. Credits: 11 Sonnet 5.5, 1 Opus 5.5.
+Commit times (local): scaffold 10-09 16:53 with RESULTS.md saying "No model benchmarks have been run yet" and the planned frozen-threshold protocol; benchmark plus splitter fix 17:14 same day (21 minutes later); 2x2 ablation 10-10 07:23; README rewrite, diagram, scrub, doc fixes 10-10 to 10-12; Dependabot 10-13; roadmap gaps 10-13; old explainer added 10-19. Plan-versus-results: plan existed before the benchmark script but is a plan, not a locked protocol with a success rule. The 2x2 hypothesis (titles) arose from analysis of test seed 2 outputs (README/RESULTS), then final numbers used a fresh seed 3 sample. Credits: AI-agent credit line on all 12.
 
 ## E9 Gates and approvals
 None in the repo (no gates.yaml, no approvals).
@@ -120,3 +120,27 @@ Also: "kept 82.5 percent" reworded as share of supported claims not wrongly flag
 
 ## E19 Review fixes: pictures and naming
 Source: rag-audit.review.md "Needs Chris". Checked auditor._best_evidence (scores every passage, keeps max entailment) and _judge (cut-offs applied after) in the clone. Regenerated images/rag-audit-learned-vs-rules.png (the model box now reads "scores every source sentence"; the next box "keeps the highest-scoring sentence; cut-offs pick a verdict (fixed rule)") and images/rag-audit-parts.png ("Summary splitter", "Source splitter", "Verdict rules", "exit status 1"; "Passage cutter" and "Referee" removed). Same style, viewed after render: no clipping or overlap. Guide parts paragraph renamed to match (summary splitter, source splitter, verdict rules, report writer). Word count now 7,1xx by wc -w (limit 8,000).
+
+## Author answers folded in, 2026-11-05
+
+Source: answers appended to the 19 questions in rag-audit.questions.md. Label: Author says. Repo clone re-pulled; HEAD 784865d.
+
+- Q1: Author says unsure why this roadmap item and why NLI over an LLM judge. README reasons stay attributed to the README.
+- Q2: Author says the roadmap came from both him and an AI assistant drafting. The repo only says "a longer roadmap", with no authorship; no conflict. Tool not named.
+- Q3: Author unsure how to describe the standalone-form claim. Kept as the README's claim; his view marked undecided.
+- Q4: Author unsure who the user would be; nobody else has used it. Added.
+- Q5: Defense-interest wording acceptable; unchanged.
+- Q6: Author unsure what the model was trained on. Guide keeps "labelled sentence pairs; training data not recorded".
+- Q7: Small and base model choices followed recommendations. Added.
+- Q8: The agent proposed the page-title idea. Guide attribution updated. Repo (docs/RESULTS.md, README) records the rejected multi-sentence hypothesis and the title finding but not who proposed titles; no conflict.
+- Q9: Unsure whether the frozen-threshold plan in the first commit was his instruction or a locked protocol. Wording crediting him removed; guide says unsure.
+- Q10: Unsure whether to fix or document the CLI 0.7 default and missing title option. Stated as open.
+- Q11: Splitter fix: will follow recommendation. Stated.
+- Q12: Scrubbing the local path in committed benchmark logs: will follow recommendation. Stated.
+- Q13: Confirmed in the repo: commit 784865d (2026-10-27) replaced the earlier explainer file (rag-audit_MASTER_EXPLAINER.md, from 24f4cdd) with this guide's first published version; one file, no second copy. Guide says so plainly.
+- Q14: ruff in README but not CI: will follow recommendation. Stated with Q11 and Q12.
+- Q15: Unsure whether other tools were used. Guide says only "AI coding agents" and "an AI-agent credit line"; no tool or model names.
+- Q16: Mostly followed recommendations. Wording crediting him with scope, plan, architecture, model decisions or overrides replaced; the README's recorded choices are listed without attributing them to him. The "setup I would use" wording was changed to "the README's recommended setup", and the "if I continued" plan was replaced by the undecided backlog.
+- Q17: Hours unsure, multitasking. No hours estimate in the guide; stated.
+- Q18: Unsure what to do about backlog; asked for a recommendation. Guide says backlog choices and time not decided.
+- Q19: Does not recall what was hardest, surprising or least understood. Stated plainly.
